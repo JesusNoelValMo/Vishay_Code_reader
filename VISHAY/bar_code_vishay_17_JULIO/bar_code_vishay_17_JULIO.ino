@@ -25,6 +25,9 @@ String codigoSub;
 bool isFinished = false;
 bool ledblinkk = false;
 bool toggle= false;
+
+bool greenledblinkk = false;
+bool togglegreen= false;
 class MyParser : public HIDReportParser {
   public:
     MyParser();
@@ -115,9 +118,7 @@ MyParser     Parser;
 
 void setup() {
 
-  digitalWrite(LED_BAD, HIGH);
-  digitalWrite(LED_BAD2, LOW);
-  digitalWrite(LED_OK, HIGH);
+ 
   t.oscillate(13, 1000, LOW);
   t.every(1000, timeoutcount); 
   t2.oscillate(13, 1000, LOW);
@@ -126,6 +127,13 @@ void setup() {
   pinMode(LED_OK, OUTPUT);
   pinMode(LED_BAD, OUTPUT);
   pinMode(LED_BAD2, OUTPUT);
+
+  //APAGA LEDS Y PRENDE RELE DE BOTON STOP
+   digitalWrite(LED_BAD, HIGH);
+  digitalWrite(LED_BAD2, HIGH);
+  digitalWrite(LED_OK, HIGH);
+
+  //PIN PARA RESET DE TIMEOUT
   pinMode(7, INPUT);
   Serial.begin( 115200 );
   Serial.println("Start");
@@ -140,7 +148,8 @@ void setup() {
  lcd.backlight();
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("ESCANEE ETIQUETA");
+      lcd.print("ESCANEE TARJETA");
+      greenledblinkk = true;
 }
 
 void loop() {
@@ -148,6 +157,7 @@ void loop() {
 
   String s = "wp00r033";
 t2.update();
+
   //  a = a + "1";
   // Serial.println(a);
   if (isFinished == true) {
@@ -155,7 +165,15 @@ t2.update();
 
     if ((val.startsWith("w"))&&(val.length() == 7)||(val.startsWith("w"))&&(val.length() == 8)||(val.startsWith("w"))&&(val.length() == 9)){
       ledblinkk=false;
+greenledblinkk = false;
+      //quita boton de stop
+  digitalWrite(LED_BAD2, LOW);
 
+//LED BAD OFF
+   digitalWrite(LED_BAD, HIGH);
+
+   //APAGA VERDE
+    digitalWrite(LED_OK, HIGH);
       // String valtrim = "";
       val.replace(" ", "");
       // Serial.print(val);
@@ -186,21 +204,20 @@ if (digitalRead(7)==HIGH){
 
         
         t.update();
-        if (cuenta > 300) {
+        if (cuenta > 60) {
           ledblinkk=true;
           
            ledblink();
-            
-          digitalWrite(LED_BAD2, HIGH);
+         //SI SE CUMPLW TIMEOUT SE PARA LA MAQUINA   
+         digitalWrite(LED_BAD2, HIGH);
           digitalWrite(LED_OK, HIGH);   // turn the LED on (HIGH is the voltage level)
           lcd.backlight();
           lcd.clear();
-          lcd.setCursor(2, 0);
-          lcd.print("ESCANEE!!");
-          lcd.setCursor(1, 1);
-          lcd.print(cuenta);
-           lcd.setCursor(5, 1);
-          lcd.print("Seg.");
+          lcd.setCursor(0, 0);
+          lcd.print("ESCANEE TARJETA");
+          lcd.setCursor(3, 1);
+          lcd.print("OTRA VEZ");
+          
           break;
         }
         if (isFinished == true) {
@@ -274,15 +291,23 @@ if (digitalRead(7)==HIGH){
               lcd.clear();
               lcd.setCursor(1, 0);
               lcd.print("ORDEN COMPLETA");
+               digitalWrite(LED_BAD2, HIGH);
+             
+               delay(2000);
+                 lcd.backlight();
+              lcd.clear();
+              lcd.setCursor(1, 0);
+                greenledblinkk = true;
+                 lcd.print("ESCANEE TARJETA");
               break;
 
             }
             else {
-              Serial.println("HOJA EQUIVOCADA");
+              Serial.println("TARJETA EQUIVOCADA");
               val = "";
               lcd.clear();
               lcd.setCursor(1, 0);
-              lcd.print("HOJA EQUIV.");
+              lcd.print("TARJETA EQUIV.");
             //  break;
 
               codigoSub = "";
@@ -353,6 +378,16 @@ if (ledblinkk == true){
     
   
   }
+  if (greenledblinkk == true){
+  togglegreen= !togglegreen;
+   digitalWrite(LED_OK, togglegreen);
+        
+       
+    
+  
+  }
            
 
 }
+
+
